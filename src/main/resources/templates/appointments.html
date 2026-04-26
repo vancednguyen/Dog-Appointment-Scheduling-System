@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Appointments</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="appointments-date-page">
+    <h1 class="appointments-date-title">Available Appointment Dates</h1>
+
+    <div class="appointments-date-box">
+        <p th:if="${#lists.isEmpty(availableDates)}" class="no-dates-message">
+            No available dates right now.
+        </p>
+
+        <div th:each="date : ${availableDates}" class="date-row">
+            <span class="date-text" th:text="${date}">2026-04-28</span>
+            <a th:href="@{/appointments/book(date=${date})}" class="date-select-btn">Select</a>
+        </div>
+    </div>
+</div>
+
+</body>
+</html>

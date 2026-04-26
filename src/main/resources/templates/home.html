@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Lu's Doggy Services</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="navbar">
+    <div class="logo">Lu's Doggy Services</div>
+
+    <div class="nav-links">
+        <a href="/">Home</a>
+        <a href="/appointments">Appointments</a>
+        <a href="/about">About</a>
+
+        <!-- Show Login if user is not logged in -->
+        <a th:if="${loggedInUserFirstName == null}" href="/login" class="login-link">Login</a>
+
+        <!-- Show user menu if logged in -->
+        <div th:if="${loggedInUserFirstName != null}" class="user-menu">
+            <button class="user-menu-button" onclick="toggleDropdown()"
+                    th:text="${loggedInUserFirstName}">
+                User
+            </button>
+
+            <div id="userDropdown" class="dropdown-content">
+                <a href="/logout">Log out</a>
+            </div>
+        </div>
+        <a href="/provider/login" class="login-link">Provider Login</a>
+    </div>
+</div>
+
+<div class="container">
+    <img src="/lue.jpg" alt="Dogs" class="dog-img">
+    <h2 class="about-title">About Me</h2>
+</div>
+
+<script>
+    function toggleDropdown() {
+        const dropdown = document.getElementById("userDropdown");
+        dropdown.classList.toggle("show");
+    }
+
+    window.onclick = function(event) {
+        if (!event.target.matches('.user-menu-button')) {
+            const dropdowns = document.getElementsByClassName("dropdown-content");
+            for (let i = 0; i < dropdowns.length; i++) {
+                dropdowns[i].classList.remove('show');
+            }
+        }
+    }
+</script>
+
+</body>
+</html>

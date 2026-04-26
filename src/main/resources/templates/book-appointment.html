@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Book Appointment</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="booking-page">
+    <div class="booking-date" th:text="${selectedDate}">2026-03-03</div>
+
+    <div class="booking-card">
+        <p th:if="${error}" th:text="${error}" style="color:red; text-align:center;"></p>
+
+        <form action="/appointments/submit" method="post" class="booking-form">
+            <input type="hidden" name="date" th:value="${selectedDate}">
+
+            <label for="providerId">Select a Provider</label>
+            <select id="providerId" name="providerId" required>
+                <option value="">List of providers</option>
+                <option th:each="provider : ${providers}"
+                        th:value="${provider.providerId}"
+                        th:text="${provider.name}">
+                </option>
+            </select>
+
+            <label for="slotId">Select a Time Slot</label>
+            <select id="slotId" name="slotId" required>
+                <option value="">List of Time Slots</option>
+                <option th:each="slot : ${timeSlots}"
+                        th:value="${slot.slotId}"
+                        th:text="${slot.startTime} + ' - ' + ${slot.endTime}">
+                </option>
+            </select>
+
+            <label for="serviceId">Select a Service</label>
+            <select id="serviceId" name="serviceId" required>
+                <option value="">List of Services</option>
+                <option th:each="service : ${services}"
+                        th:value="${service.serviceId}"
+                        th:text="${service.serviceName}">
+                </option>
+            </select>
+
+            <label for="dogName">Which Dog</label>
+            <select id="dogName" name="dogName" required>
+                <option value="">List of Dogs</option>
+                <option th:if="${dogName != null}" th:value="${dogName}" th:text="${dogName}"></option>
+            </select>
+
+            <button type="submit" class="booking-submit-btn">Submit</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

@@ -3,12 +3,25 @@ GET http://localhost:8080/items
 Accept: application/json
 
 ### POST create an item
-POST http://localhost:8080/items
+POST http://localhost:8081/items
 Content-Type: application/json
 
 {
   "name": "Notebook",
   "quantity": 5
 }
+### POST create an item
+POST http://localhost:8081/appointments
+Content-Type: application/json
+
+{
+  "id" : 3,
+  "userId": "U1",
+  "providerId": "P2",
+  "serviceId": "S3",
+  "slotId": "SLOT2",
+  "status": "CANCELED"
+}
+
 
 

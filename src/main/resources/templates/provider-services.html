@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Provider Services</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="page-box wider-box">
+    <h1>My Services</h1>
+
+    <p th:if="${error}" th:text="${error}" style="color:red;"></p>
+
+    <form action="/provider/services/add" method="post" class="form-box">
+        <input type="text" name="serviceName" placeholder="Service Name" required>
+        <input type="number" name="serviceDuration" placeholder="Duration (minutes)" required>
+        <input type="number" step="0.01" name="price" placeholder="Price" required>
+        <button type="submit">Add Service</button>
+    </form>
+
+    <div class="service-list">
+        <h2>Current Services</h2>
+
+        <table class="service-table">
+            <thead>
+            <tr>
+                <th>Name</th>
+                <th>Duration</th>
+                <th>Price</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr th:each="service : ${services}">
+                <td th:text="${service.serviceName}">Dog Walking</td>
+                <td th:text="${service.serviceDuration} + ' min'">30 min</td>
+                <td th:text="'$' + ${service.price}">$25.00</td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+</body>
+</html>
