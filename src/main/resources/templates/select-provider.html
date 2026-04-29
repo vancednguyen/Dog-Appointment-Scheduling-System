@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Select Provider</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="booking-page">
+    <div class="booking-date" th:text="${selectedDate}">2026-03-03</div>
+
+    <div class="booking-card">
+        <form action="/appointments/book" method="get" class="booking-form">
+            <input type="hidden" name="date" th:value="${selectedDate}">
+
+            <label for="providerId">Select a Provider</label>
+            <select id="providerId" name="providerId" required>
+                <option value="">List of providers</option>
+                <option th:each="provider : ${providers}"
+                        th:value="${provider.providerId}"
+                        th:text="${provider.name}">
+                </option>
+            </select>
+
+            <button type="submit" class="booking-submit-btn">Next</button>
+        </form>
+    </div>
+</div>
+
+</body>
+</html>

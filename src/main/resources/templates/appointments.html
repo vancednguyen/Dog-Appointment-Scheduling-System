@@ -17,7 +17,7 @@
 
         <div th:each="date : ${availableDates}" class="date-row">
             <span class="date-text" th:text="${date}">2026-04-28</span>
-            <a th:href="@{/appointments/book(date=${date})}" class="date-select-btn">Select</a>
+            <a th:href="@{/appointments/providers(date=${date})}" class="date-select-btn">Select</a>
         </div>
     </div>
 </div>

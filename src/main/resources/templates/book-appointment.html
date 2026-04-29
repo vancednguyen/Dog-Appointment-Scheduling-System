@@ -15,15 +15,12 @@
 
         <form action="/appointments/submit" method="post" class="booking-form">
             <input type="hidden" name="date" th:value="${selectedDate}">
+            <input type="hidden" name="providerId" th:value="${selectedProviderId}">
 
-            <label for="providerId">Select a Provider</label>
-            <select id="providerId" name="providerId" required>
-                <option value="">List of providers</option>
-                <option th:each="provider : ${providers}"
-                        th:value="${provider.providerId}"
-                        th:text="${provider.name}">
-                </option>
-            </select>
+            <p style="text-align:center;">
+                Provider:
+                <span th:text="${provider != null ? provider.name : 'Selected Provider'}"></span>
+            </p>
 
             <label for="slotId">Select a Time Slot</label>
             <select id="slotId" name="slotId" required>

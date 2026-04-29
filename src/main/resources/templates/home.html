@@ -34,6 +34,10 @@
 </div>
 
 <div class="container">
+    <div th:if="${loggedInUserFirstName != null}" class="home-action-bar">
+        <a href="/my-bookings" class="home-bookings-btn">View Bookings</a>
+    </div>
+
     <img src="/lue.jpg" alt="Dogs" class="dog-img">
     <h2 class="about-title">About Me</h2>
 </div>

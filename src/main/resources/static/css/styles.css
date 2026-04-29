@@ -344,3 +344,53 @@ body {
 .date-select-btn:hover {
     background-color: #311a5c;
 }
+.page-top-bar {
+    width: 100%;
+    padding: 20px 30px 0 30px;
+    box-sizing: border-box;
+}
+
+.back-button {
+    display: inline-block;
+    background-color: #1f123f;
+    color: white;
+    text-decoration: none;
+    padding: 10px 18px;
+    border-radius: 8px;
+    font-size: 16px;
+}
+
+.back-button:hover {
+    background-color: #311a5c;
+}
+.home-action-bar {
+    margin-bottom: 25px;
+    text-align: center;
+}
+
+.home-bookings-btn {
+    display: inline-block;
+    background-color: #1f123f;
+    color: white;
+    text-decoration: none;
+    padding: 12px 22px;
+    border-radius: 8px;
+    font-size: 18px;
+}
+
+.home-bookings-btn:hover {
+    background-color: #311a5c;
+}
+
+.table-action-btn {
+    background-color: #1f123f;
+    color: white;
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+.table-action-btn:hover {
+    background-color: #311a5c;
+}

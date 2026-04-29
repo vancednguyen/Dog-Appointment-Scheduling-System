@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>My Bookings</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="page-top-bar">
+    <a href="/" class="back-button">← Back</a>
+</div>
+
+<div class="page-box wider-box">
+    <h1>My Bookings</h1>
+
+    <p th:if="${message}" th:text="${message}" style="color: lightgreen; text-align:center;"></p>
+    <p th:if="${error}" th:text="${error}" style="color: #ff8080; text-align:center;"></p>
+
+    <table class="service-table">
+        <thead>
+        <tr>
+            <th>Provider</th>
+            <th>Service</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Action</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="b : ${bookings}">
+            <td th:text="${b.providerName}"></td>
+            <td th:text="${b.serviceName}"></td>
+            <td th:text="${b.slotDate}"></td>
+            <td th:text="${b.startTime} + ' - ' + ${b.endTime}"></td>
+            <td th:text="${b.status}"></td>
+            <td>
+                <form th:if="${b.status == 'BOOKED'}"
+                      action="/my-bookings/cancel"
+                      method="post"
+                      onsubmit="return confirm('Are you sure you want to cancel this booking?');">
+
+                    <input type="hidden" name="appointmentId" th:value="${b.appointmentId}">
+                    <button type="submit" class="table-action-btn">Cancel</button>
+                </form>
+
+                <span th:if="${b.status != 'BOOKED'}">No action</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>

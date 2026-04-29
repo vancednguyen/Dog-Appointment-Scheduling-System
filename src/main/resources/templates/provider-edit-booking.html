@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Edit Booking</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="page-top-bar">
+    <a href="/provider/bookings" class="back-button">← Back</a>
+</div>
+
+<div class="page-box">
+    <h1>Edit Booking</h1>
+
+    <p><strong>Client:</strong> <span th:text="${booking.userName}"></span></p>
+    <p><strong>Current Service:</strong> <span th:text="${booking.serviceName}"></span></p>
+    <p><strong>Current Date:</strong> <span th:text="${booking.slotDate}"></span></p>
+    <p><strong>Current Time:</strong> <span th:text="${booking.startTime} + ' - ' + ${booking.endTime}"></span></p>
+
+    <form action="/provider/bookings/edit" method="post" class="booking-form">
+        <input type="hidden" name="appointmentId" th:value="${booking.appointmentId}">
+
+        <label for="serviceId">Change Service</label>
+        <select id="serviceId" name="serviceId" required>
+            <option th:each="service : ${services}"
+                    th:value="${service.serviceId}"
+                    th:text="${service.serviceName}"
+                    th:selected="${service.serviceId == booking.serviceId}">
+            </option>
+        </select>
+
+        <label for="slotId">Change Time Slot</label>
+        <select id="slotId" name="slotId" required>
+            <option th:each="slot : ${slots}"
+                    th:value="${slot.slotId}"
+                    th:text="${slot.slotDate} + ' ' + ${slot.startTime} + ' - ' + ${slot.endTime}"
+                    th:selected="${slot.slotId == booking.slotId}">
+            </option>
+        </select>
+
+        <button type="submit" class="booking-submit-btn">Save Changes</button>
+    </form>
+</div>
+
+</body>
+</html>

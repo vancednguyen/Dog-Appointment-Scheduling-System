@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Provider Bookings</title>
+    <link rel="stylesheet" href="/css/styles.css">
+</head>
+<body>
+
+<div class="page-top-bar">
+    <a href="/provider/dashboard" class="back-button">← Back</a>
+</div>
+
+<div class="page-box wider-box">
+    <h1>My Bookings</h1>
+
+    <p th:if="${message}" th:text="${message}" style="color: lightgreen; text-align:center;"></p>
+    <p th:if="${error}" th:text="${error}" style="color: #ff8080; text-align:center;"></p>
+
+    <table class="service-table">
+        <thead>
+        <tr>
+            <th>Client</th>
+            <th>Service</th>
+            <th>Date</th>
+            <th>Time</th>
+            <th>Status</th>
+            <th>Actions</th>
+        </tr>
+        </thead>
+
+        <tbody>
+        <tr th:each="b : ${bookings}">
+            <td th:text="${b.userName}"></td>
+            <td th:text="${b.serviceName}"></td>
+            <td th:text="${b.slotDate}"></td>
+            <td th:text="${b.startTime} + ' - ' + ${b.endTime}"></td>
+            <td th:text="${b.status}"></td>
+            <td>
+                <div th:if="${b.status == 'BOOKED'}" style="display:flex; gap:8px; flex-wrap:wrap;">
+                    <a th:href="@{/provider/bookings/edit/{id}(id=${b.appointmentId})}"
+                       class="booking-submit-btn"
+                       style="padding:8px 12px; text-decoration:none;">Edit</a>
+
+                    <form action="/provider/bookings/cancel" method="post" style="display:inline;">
+                        <input type="hidden" name="appointmentId" th:value="${b.appointmentId}">
+                        <button type="submit" class="booking-submit-btn" style="padding:8px 12px;">
+                            Cancel
+                        </button>
+                    </form>
+
+                    <form action="/provider/bookings/complete" method="post" style="display:inline;">
+                        <input type="hidden" name="appointmentId" th:value="${b.appointmentId}">
+                        <button type="submit" class="booking-submit-btn" style="padding:8px 12px;">
+                            Complete
+                        </button>
+                    </form>
+                </div>
+
+                <span th:if="${b.status != 'BOOKED'}">No actions</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+
+</body>
+</html>
