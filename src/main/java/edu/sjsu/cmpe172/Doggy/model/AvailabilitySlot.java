@@ -8,6 +8,7 @@ public class AvailabilitySlot {
     private String startTime;
     private String endTime;
     private String status;
+    private int version;
 
     public AvailabilitySlot() {}
 
@@ -31,4 +32,7 @@ public class AvailabilitySlot {
 
     public String getStatus() { return status; }
     public void setStatus(String status) { this.status = status; }
+    public int getVersion() {return version;}
+
+    public void setVersion(int version) {this.version = version;}
 }

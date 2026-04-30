@@ -1,0 +1,14 @@
+POST http://localhost:8081/api/bookings/send-confirmation
+Content-Type: application/json
+
+{
+  "appointmentId": 101,
+  "userEmail": "user@example.com",
+  "userName": "Jane Doe",
+  "providerName": "Happy Paws",
+  "serviceName": "Full Groom",
+  "slotDate": "2026-04-30",
+  "startTime": "10:00:00",
+  "endTime": "11:00:00",
+  "dogName": "Buddy"
+}

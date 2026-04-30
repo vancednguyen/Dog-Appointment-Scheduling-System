@@ -7,6 +7,7 @@ import edu.sjsu.cmpe172.Doggy.model.ServiceOffering;
 import edu.sjsu.cmpe172.Doggy.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import edu.sjsu.cmpe172.Doggy.model.UserBookingView;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 
@@ -14,9 +15,12 @@ import java.util.List;
 public class BookingService {
 
     private final BookingRepository bookingRepository;
+    private final NotificationClientService notificationClientService;
 
-    public BookingService(BookingRepository bookingRepository) {
+    public BookingService(BookingRepository bookingRepository, NotificationClientService notificationClientService)
+    {
         this.bookingRepository = bookingRepository;
+        this.notificationClientService = notificationClientService;
     }
 
     public List<Provider> getProvidersByDate(String date) {
@@ -39,10 +43,8 @@ public class BookingService {
         return bookingRepository.findDogNameByUserId(userId);
     }
 
+    @Transactional
     public void createBooking(Long userId, Long providerId, Long serviceId, Long slotId, String date) {
-        if (!bookingRepository.isSlotStillAvailable(slotId)) {
-            throw new IllegalArgumentException("That slot is no longer available.");
-        }
 
         if (!bookingRepository.isSlotValidForProviderAndDate(slotId, providerId, date)) {
             throw new IllegalArgumentException("Selected time slot does not belong to that provider/date.");
@@ -52,8 +54,28 @@ public class BookingService {
             throw new IllegalArgumentException("Selected service does not belong to that provider/date.");
         }
 
+        AvailabilitySlot slot = bookingRepository.findSlotById(slotId);
+
+        if (slot == null) {
+            throw new IllegalArgumentException("Slot not found.");
+        }
+
+        if (!"AVAILABLE".equalsIgnoreCase(slot.getStatus())) {
+            throw new IllegalArgumentException("That slot is no longer available.");
+        }
+
+        int updatedRows = bookingRepository.bookSlotWithVersion(
+                slotId,
+                providerId,
+                serviceId,
+                slot.getVersion()
+        );
+
+        if (updatedRows == 0) {
+            throw new IllegalStateException("That slot was just booked by another user. Please choose another time.");
+        }
+
         bookingRepository.insertAppointment(userId, providerId, serviceId, slotId);
-        bookingRepository.markSlotBooked(slotId);
     }
 
     public List<String> getAvailableDates() {

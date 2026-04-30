@@ -10,9 +10,13 @@ import java.sql.*;
 import java.util.ArrayList;
 import java.util.List;
 import edu.sjsu.cmpe172.Doggy.model.UserBookingView;
-
+import javax.sql.DataSource;
+import org.springframework.stereotype.Repository;
+import org.springframework.jdbc.datasource.DataSourceUtils;
 @Repository
 public class BookingRepository {
+
+    private final DataSource dataSource;
 
     @Value("${spring.datasource.url}")
     private String dbUrl;
@@ -22,6 +26,10 @@ public class BookingRepository {
 
     @Value("${spring.datasource.password}")
     private String dbPassword;
+
+    public BookingRepository(DataSource dataSource) {
+        this.dataSource = dataSource;
+    }
 
     public List<Provider> findProvidersByDate(String date) {
         String sql = "SELECT DISTINCT p.provider_id, p.first_name, p.last_name, p.phone_number, p.email, p.password, p.address, p.name " +
@@ -147,9 +155,9 @@ public class BookingRepository {
         String sql = "INSERT INTO appointments (user_id, provider_id, service_id, slot_id, status) " +
                 "VALUES (?, ?, ?, ?, 'BOOKED')";
 
-        try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
-             PreparedStatement stmt = conn.prepareStatement(sql)) {
+        Connection conn = DataSourceUtils.getConnection(dataSource);
 
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
             stmt.setLong(1, userId);
             stmt.setLong(2, providerId);
             stmt.setLong(3, serviceId);
@@ -158,6 +166,8 @@ public class BookingRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error inserting appointment", e);
+        } finally {
+            DataSourceUtils.releaseConnection(conn, dataSource);
         }
     }
 
@@ -670,6 +680,192 @@ public class BookingRepository {
 
         } catch (SQLException e) {
             throw new RuntimeException("Error updating user appointment status", e);
+        }
+    }
+    public boolean bookSlotAndCreateAppointment(Long userId, Long providerId, Long serviceId, Long slotId) {
+        String claimSlotSql =
+                "UPDATE availability_slot " +
+                        "SET status = 'BOOKED' " +
+                        "WHERE slot_id = ? AND provider_id = ? AND service_id = ? AND status = 'AVAILABLE'";
+
+        String insertAppointmentSql =
+                "INSERT INTO appointments (user_id, provider_id, service_id, slot_id, status) " +
+                        "VALUES (?, ?, ?, ?, 'BOOKED')";
+
+        Connection conn = null;
+
+        try {
+            conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+            conn.setAutoCommit(false);
+
+            try (PreparedStatement claimStmt = conn.prepareStatement(claimSlotSql)) {
+                claimStmt.setLong(1, slotId);
+                claimStmt.setLong(2, providerId);
+                claimStmt.setLong(3, serviceId);
+
+                int updatedRows = claimStmt.executeUpdate();
+
+                if (updatedRows == 0) {
+                    conn.rollback();
+                    return false;
+                }
+            }
+
+            try (PreparedStatement insertStmt = conn.prepareStatement(insertAppointmentSql)) {
+                insertStmt.setLong(1, userId);
+                insertStmt.setLong(2, providerId);
+                insertStmt.setLong(3, serviceId);
+                insertStmt.setLong(4, slotId);
+                insertStmt.executeUpdate();
+            }
+
+            conn.commit();
+            return true;
+
+        } catch (SQLException e) {
+            if (conn != null) {
+                try {
+                    conn.rollback();
+                } catch (SQLException ex) {
+                    ex.printStackTrace();
+                }
+            }
+            throw new RuntimeException("Error booking slot transactionally", e);
+
+        } finally {
+            if (conn != null) {
+                try {
+                    conn.setAutoCommit(true);
+                    conn.close();
+                } catch (SQLException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+    public AvailabilitySlot findSlotById(Long slotId) {
+        String sql = "SELECT slot_id, provider_id, service_id, slot_date, start_time, end_time, status, version " +
+                "FROM availability_slot WHERE slot_id = ?";
+
+        Connection conn = DataSourceUtils.getConnection(dataSource);
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, slotId);
+
+            try (ResultSet rs = stmt.executeQuery()) {
+                if (rs.next()) {
+                    AvailabilitySlot slot = new AvailabilitySlot();
+                    slot.setSlotId(rs.getLong("slot_id"));
+                    slot.setProviderId(rs.getLong("provider_id"));
+                    slot.setServiceId(rs.getLong("service_id"));
+                    slot.setSlotDate(rs.getDate("slot_date").toString());
+                    slot.setStartTime(rs.getTime("start_time").toString());
+                    slot.setEndTime(rs.getTime("end_time").toString());
+                    slot.setStatus(rs.getString("status"));
+                    slot.setVersion(rs.getInt("version"));
+                    return slot;
+                }
+                return null;
+            }
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error loading slot by id", e);
+        } finally {
+            DataSourceUtils.releaseConnection(conn, dataSource);
+        }
+    }
+    public int bookSlotWithVersion(Long slotId, Long providerId, Long serviceId, int expectedVersion) {
+        String sql = "UPDATE availability_slot " +
+                "SET status = 'BOOKED', version = version + 1 " +
+                "WHERE slot_id = ? AND provider_id = ? AND service_id = ? " +
+                "AND status = 'AVAILABLE' AND version = ?";
+
+        Connection conn = DataSourceUtils.getConnection(dataSource);
+
+        try (PreparedStatement stmt = conn.prepareStatement(sql)) {
+            stmt.setLong(1, slotId);
+            stmt.setLong(2, providerId);
+            stmt.setLong(3, serviceId);
+            stmt.setInt(4, expectedVersion);
+
+            return stmt.executeUpdate();
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error booking slot with version check", e);
+        } finally {
+            DataSourceUtils.releaseConnection(conn, dataSource);
+        }
+    }
+    public String findUserEmailById(Long userId) {
+        String sql = "SELECT email FROM users WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("email");
+            }
+            return null;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error loading user email", e);
+        }
+    }
+    public String findUserFullNameById(Long userId) {
+        String sql = "SELECT CONCAT(first_name, ' ', last_name) AS full_name FROM users WHERE user_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, userId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("full_name");
+            }
+            return null;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error loading user full name", e);
+        }
+    }
+    public String findProviderNameById(Long providerId) {
+        String sql = "SELECT name FROM providers WHERE provider_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, providerId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("name");
+            }
+            return null;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error loading provider name", e);
+        }
+    }
+    public String findServiceNameById(Long serviceId) {
+        String sql = "SELECT service_name FROM services WHERE service_id = ?";
+
+        try (Connection conn = DriverManager.getConnection(dbUrl, dbUsername, dbPassword);
+             PreparedStatement stmt = conn.prepareStatement(sql)) {
+
+            stmt.setLong(1, serviceId);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                return rs.getString("service_name");
+            }
+            return null;
+
+        } catch (SQLException e) {
+            throw new RuntimeException("Error loading service name", e);
         }
     }
 

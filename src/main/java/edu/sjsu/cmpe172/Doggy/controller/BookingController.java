@@ -102,7 +102,20 @@ public class BookingController {
             model.addAttribute("selectedDog", dogName);
             return "booking-confirmation";
 
-        } catch (IllegalArgumentException e) {
+        }
+        catch (IllegalStateException e) {
+            logger.error("Booking failed: userId={}, slotId={}, reason={}",
+                    userId, slotId, e.getMessage());
+            model.addAttribute("error", e.getMessage());
+            model.addAttribute("selectedDate", date);
+            model.addAttribute("selectedProviderId", providerId);
+            model.addAttribute("provider", bookingService.getProviderById(providerId));
+            model.addAttribute("timeSlots", bookingService.getSlotsByDateAndProvider(date, providerId));
+            model.addAttribute("services", bookingService.getServicesByDateAndProvider(date, providerId));
+            model.addAttribute("dogName", bookingService.getDogNameByUserId(userId));
+            return "book-appointment";
+        }
+        catch (IllegalArgumentException e) {
             logger.warn("Booking failed: userId={}, slotId={}, reason={}",
                     userId, slotId, e.getMessage());
 
