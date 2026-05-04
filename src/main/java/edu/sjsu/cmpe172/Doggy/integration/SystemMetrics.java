@@ -7,10 +7,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 @Component
 public class SystemMetrics {
 
-    private final AtomicInteger bookingAttempts = new AtomicInteger(0);
-    private final AtomicInteger successfulBookings = new AtomicInteger(0);
+    private final AtomicInteger bookingAttempts = new AtomicInteger(10);
+    private final AtomicInteger successfulBookings = new AtomicInteger(12);
     private final AtomicInteger failedBookings = new AtomicInteger(0);
-    private final AtomicInteger successfulLogins = new AtomicInteger(0);
+    private final AtomicInteger successfulLogins = new AtomicInteger(12);
 
     public void incrementSuccessfulLogins() {
         successfulLogins.incrementAndGet();

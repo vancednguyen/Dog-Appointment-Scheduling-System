@@ -1,5 +1,6 @@
 package edu.sjsu.cmpe172.Doggy.service;
 
+import edu.sjsu.cmpe172.Doggy.controller.BookingController;
 import edu.sjsu.cmpe172.Doggy.model.AvailabilitySlot;
 import edu.sjsu.cmpe172.Doggy.model.Provider;
 import edu.sjsu.cmpe172.Doggy.model.ProviderBookingView;
@@ -8,6 +9,10 @@ import edu.sjsu.cmpe172.Doggy.repository.BookingRepository;
 import org.springframework.stereotype.Service;
 import edu.sjsu.cmpe172.Doggy.model.UserBookingView;
 import org.springframework.transaction.annotation.Transactional;
+import edu.sjsu.cmpe172.Doggy.dto.BookingConfirmationRequest;
+import edu.sjsu.cmpe172.Doggy.dto.NotificationResponse;
+import edu.sjsu.cmpe172.Doggy.integration.SystemMetrics;
+
 
 import java.util.List;
 
@@ -16,11 +21,15 @@ public class BookingService {
 
     private final BookingRepository bookingRepository;
     private final NotificationClientService notificationClientService;
+    private final SystemMetrics systemMetrics;
 
-    public BookingService(BookingRepository bookingRepository, NotificationClientService notificationClientService)
+
+    public BookingService(BookingRepository bookingRepository, NotificationClientService notificationClientService,
+                          SystemMetrics systemMetrics)
     {
         this.bookingRepository = bookingRepository;
         this.notificationClientService = notificationClientService;
+        this.systemMetrics = systemMetrics;
     }
 
     public List<Provider> getProvidersByDate(String date) {
@@ -47,10 +56,12 @@ public class BookingService {
     public void createBooking(Long userId, Long providerId, Long serviceId, Long slotId, String date) {
 
         if (!bookingRepository.isSlotValidForProviderAndDate(slotId, providerId, date)) {
-            throw new IllegalArgumentException("Selected time slot does not belong to that provider/date.");
+            systemMetrics.incrementFailedBookings();
+            throw new IllegalArgumentException("Booking has been taken or Selected time slot does not belong to that provider/date.");
         }
 
         if (!bookingRepository.isServiceValidForProviderAndDate(serviceId, providerId, date)) {
+            systemMetrics.incrementFailedBookings();
             throw new IllegalArgumentException("Selected service does not belong to that provider/date.");
         }
 
@@ -122,7 +133,7 @@ public class BookingService {
         }
 
         if (!bookingRepository.isSlotValidForProviderAndService(newSlotId, providerId, serviceId)) {
-            throw new IllegalArgumentException("Selected slot does not belong to that provider/service.");
+            throw new IllegalArgumentException("Booking has already been taken.");
         }
 
         bookingRepository.markSlotAvailable(currentBooking.getSlotId());
