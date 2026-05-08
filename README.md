@@ -6,6 +6,7 @@ This project is a Spring Boot web application that allows users to book pet care
 The application follows a layered monolithic architecture with a clear separation of concerns between presentation, business logic, and data access. It also demonstrates optimistic concurrency control and a coarse-grained REST-based service boundary.
 
 Features
+
 User registration and login
 Provider registration and management
 Service offering management
@@ -16,6 +17,7 @@ Mock notification system using REST
 Thymeleaf-based user interface
 
 Architecture
+
 The system is implemented as a layered monolith:
 Presentation Layer
 Spring MVC controllers and Thymeleaf templates handle user interaction and HTTP requests.
@@ -35,12 +37,14 @@ JDBC (manual SQL, no ORM)
 Maven
 
 Concurrency Handling
+
 The system uses optimistic locking to prevent double booking of availability slots.
 Each slot contains a version field. When a booking is attempted, the system performs a conditional update: The slot must still be available.
 The version must match the previously read value
 If the update fails, the booking is rejected, ensuring that only one user can successfully book a slot.
 
 Transaction Design
+
 Booking creation is handled within a transactional service method to ensure atomicity.
 Slot reservation and appointment creation are treated as a single unit of work.
 Some update and cancellation flows are implemented as multiple operations and can be improved with stronger transactional boundaries.
@@ -61,6 +65,7 @@ Logging is handled through Spring Boot’s default logging system.
 Logs are used for debugging booking operations, service calls, and notification requests.
 
 Limitations
+
 The notification system is simulated within the same application rather than deployed separately.
 No real email or SMS integration.
 Transaction handling is not fully consistent across all workflows.
@@ -71,6 +76,7 @@ Limited error handling and validation.
 No automated testing included.
 
 Future Improvements
+
 Deploy notification system as a separate service
 Integrate real notification providers (email/SMS)
 Standardize transaction management using Spring
@@ -83,6 +89,7 @@ Introduce role-based security with Spring Security
 Externalize configuration using environment variables
 
 How to Run
+
 Ensure MySQL is installed and running.
 Create the required database and tables.
 Update application.properties with your database credentials.
@@ -94,6 +101,7 @@ Open a browser and navigate to:
 http://localhost:8080
 
 Project Structure
+
 controller/     - Spring MVC controllers
 service/        - Business logic
 repository/     - JDBC data access
